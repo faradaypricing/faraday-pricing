@@ -39,7 +39,7 @@ get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_d
 
   c <- data.frame(ccy = tolower(as.character(currency_codes)), stringsAsFactors = F)
   
-  to_code <- tolower(as.character(to_currncy_code))
+  to_code <- tolower(as.character(to_currency_code))
   to_rate <- exch.rates %>%
     filter(Ccy == to_code) %>%
     select(MonthCloseRate) %>%
