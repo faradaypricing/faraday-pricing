@@ -55,7 +55,7 @@ get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_d
   
 }
 
-get_exchange_rates("USD")
+
 ##############################################################################
 # (external)
 #
