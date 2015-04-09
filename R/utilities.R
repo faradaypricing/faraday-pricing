@@ -6,8 +6,9 @@ library(stringr)
 # (external)
 #
 # Returns exchange rates for valid currency codes
+# Default is exchange rate to GBP
 ##############################################################################
-get_exchange_rates <- function(currency_codes, as_at_date = Sys.Date()){
+get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_date = Sys.Date()){
   
   ## get previous month
   dt <- as.POSIXlt(as_at_date)
@@ -32,15 +33,23 @@ get_exchange_rates <- function(currency_codes, as_at_date = Sys.Date()){
 
   odbcClose(pricing.con)
   
+  exch.rates$Ccy <- tolower(exch.rates$Ccy)
   ######################################################
   # vectorise currency codes
-  codes <- as.character(currency_codes)
+
+  c <- data.frame(ccy = tolower(as.character(currency_codes)), stringsAsFactors = F)
   
-  c <- data.frame(ccy = as.character(currency_codes), stringsAsFactors = F)
+  to_code <- tolower(as.character(to_currncy_code))
+  to_rate <- exch.rates %>%
+    filter(Ccy == to_code) %>%
+    select(MonthCloseRate) %>%
+    top_n(1) %>%
+    as.numeric
   
   retVal <- c %>% 
     left_join(exch.rates, by = c("ccy" = "Ccy")) %>%
-    select(ccy, rate = MonthCloseRate) 
+    select(ccy, rate = MonthCloseRate) %>%
+    mutate(rate = to_rate / rate)
   
   return(retVal)
   
