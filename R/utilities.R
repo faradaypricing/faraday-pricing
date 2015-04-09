@@ -2,6 +2,11 @@ library(RODBCext)
 library(dplyr)
 library(stringr)
 
+##############################################################################
+# (external)
+#
+# Returns exchange rates for valid currency codes
+##############################################################################
 get_exchange_rates <- function(currency_codes, as_at_date = Sys.Date()){
   
   ## get previous month
@@ -39,4 +44,26 @@ get_exchange_rates <- function(currency_codes, as_at_date = Sys.Date()){
   
   return(retVal)
   
+}
+
+##############################################################################
+# (external)
+#
+# Returns all currency codes
+##############################################################################
+get_valid_curency_codes <-function(){
+  
+  pricing.con <- odbcDriverConnect('driver={SQL Server};
+   server=GBLONTPD39;database=FaradayPricing;trusted_connection=true')
+  
+  query = "SELECT DISTINCT
+            [Ccy]
+            FROM [FaradayPricing].[dbo].[v_CcyRate]"
+           
+  
+  ccy_codes <- sqlExecute(pricing.con, query = query, fetch = T, stringsAsFactors = F)
+  
+  odbcClose(pricing.con)
+  
+  return(ccy_codes$Ccy)
 }
