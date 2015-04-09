@@ -5,5 +5,5 @@ Date: 2015-02-02
 Author: Johnathan McCabe and Bingyan Hong
 Maintainer: Johnathan McCabe and Bingyan Hong <johnathan.mccabe@faraday.com>
 Description: This package contains some utility functions for use in pricing
-Depends: R (>= 3.1.3), dplyr, reshape2, RODBC
+Depends: R (>= 3.1.3), dplyr, reshape2, RODBCext
 License: GPL-2
