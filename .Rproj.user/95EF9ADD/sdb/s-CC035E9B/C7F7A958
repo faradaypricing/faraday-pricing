@@ -1,0 +1,17 @@
+{
+    "contents" : "library(RODBCext)\nlibrary(dplyr)\nlibrary(stringr)\n\nget_exchange_rates <- function(currency_codes, as_at_date = Sys.Date()){\n  \n  ## get previous month\n  dt <- as.POSIXlt(as_at_date)\n  year = dt$year + 1899 + ifelse(dt$mon == 0, 0, 1)\n  month = ifelse(dt$mon == 0, 12,dt$mon)\n  \n  proc_month <- paste(year,\n                      str_pad(month, width = 2, pad = \"0\"),\n                      sep=\"\")\n  \n  pricing.con <- odbcDriverConnect('driver={SQL Server};\n   server=GBLONTPD39;database=FaradayPricing;trusted_connection=true')\n  \n  query = \"SELECT \n            [Ccy],\n            [ProcMonth],\n            [MonthCloseRate]\n            FROM [FaradayPricing].[dbo].[v_CcyRate]\n            WHERE ProcMonth = ?\"\n  \n  exch.rates <- sqlExecute(pricing.con, query = query, data = proc_month, fetch = T, stringsAsFactors = F)\n\n  odbcClose(pricing.con)\n  \n  ######################################################\n  # vectorise currency codes\n  codes <- as.character(currency_codes)\n  \n  c <- data.frame(ccy = as.character(currency_codes), stringsAsFactors = F)\n  \n  retVal <- c %>% \n    left_join(exch.rates, by = c(\"ccy\" = \"Ccy\")) %>%\n    select(ccy, rate = MonthCloseRate) \n  \n  return(retVal)\n  \n}",
+    "created" : 1428576757506.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "229862192",
+    "id" : "C7F7A958",
+    "lastKnownWriteTime" : 1428578593,
+    "path" : "C:/Projects/git/faraday-pricing/R/utilities.R",
+    "project_path" : "R/utilities.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
