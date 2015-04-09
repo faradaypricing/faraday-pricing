@@ -1,0 +1,16 @@
+{
+    "contents" : "Package: Faraday.Pricing\nTitle: Faraday Pricing R Utilities\nVersion: 1.0\nDate: 2015-02-02\nAuthor: Johnathan McCabe and Bingyan Hong\nMaintainer: Johnathan McCabe and Bingyan Hong <johnathan.mccabe@faraday.com>\nDescription: This package contains some utility functions for use in pricing\nDepends: R (>= 3.1.2), dplyr, reshape2\nLicense: GPL-2",
+    "created" : 1422891402249.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2573169573",
+    "id" : "74A4287E",
+    "lastKnownWriteTime" : 1422903098,
+    "path" : "C:/Projects/Subversion/Faraday.Pricing.Calculation/trunk/R.Projects/Faraday.Pricing/DESCRIPTION",
+    "project_path" : "DESCRIPTION",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "dcf"
+}
