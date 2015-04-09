@@ -5,9 +5,7 @@
 #' - the probability that it will be nil at the next development
 #' - the probability that it will be nil at the maximum development period
 #' 
-nil_claim_survival_probabilities <- function(claim.data, ref, dev_name, value_name ,group = NULL){
-  
-  # copy data
+nil_claim_survival_probabilities <- function(claim.data, ref, dev_name, value_name ,group = NULL){# copy data
   data = claim.data
   
   # set up single fake group if data isn't grouped

@@ -3,12 +3,12 @@ library(dplyr)
 library(stringr)
 
 ##############################################################################
-# (internal)
+# (external)
 #
 # Returns exchange rates for valid currency codes
 # Default is exchange rate to GBP
 ##############################################################################
-.get_exchange_rates.base <- function(currency_codes, to_currency_code = "GBP", as_at_date = Sys.Date()){
+get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_date = Sys.Date()){
   
   ## get previous month
   dt <- as.POSIXlt(as_at_date)
@@ -43,7 +43,7 @@ library(stringr)
   to_rate <- exch.rates %>%
     filter(Ccy == to_code) %>%
     select(MonthCloseRate) %>%
-    top_n(1) %>%
+    top_n(1,1) %>%
     as.numeric()
   
   retVal <- c %>% 
@@ -55,17 +55,7 @@ library(stringr)
   
 }
 
-##############################################################################
-# (external)
-#
-# Returns exchange rates for valid currency codes
-# Default is exchange rate to GBP
-##############################################################################
-get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_date = Sys.Date()){
-  invisible(.get_exchange_rates.base(currency_codes, to_currency_code, as_at_date))
-}
-
-
+get_exchange_rates("USD")
 ##############################################################################
 # (external)
 #
