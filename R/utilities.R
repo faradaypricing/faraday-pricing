@@ -2,12 +2,18 @@ library(RODBCext)
 library(dplyr)
 library(stringr)
 
-##############################################################################
-# (external)
-#
-# Returns exchange rates for valid currency codes
-# Default is exchange rate to GBP
-##############################################################################
+
+#' Returns exchange rates for valid currency codes. The values returned are the value of 1 unit of the 
+#' currency in the target currency. eg 1 GBP = X USD
+#' 
+#' It is vectorised over currency_codes
+#'
+#' @param currency_codes A character vector of ISO currency codes
+#' @param to_currency_code The currency for which exchange rates are required. Default is GBL
+#' @param as_at_date The date at which the exchange rate was valid
+#' @return A numeric vector of exchange rates
+#' @examples
+#' get_exchange_rates(c("USD", "HKD"), "EUR", "as.Date"2005-04-01")
 get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_date = Sys.Date()){
   
   ## get previous month
@@ -56,11 +62,10 @@ get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_d
 }
 
 
-##############################################################################
-# (external)
-#
-# Returns all currency codes
-##############################################################################
+#' Returns all valid currency codes as stored within the Faraday warehouse
+#' 
+#' @examples
+#' get_valid_curency_codes()
 get_valid_curency_codes <-function(){
   
   pricing.con <- odbcDriverConnect('driver={SQL Server};
