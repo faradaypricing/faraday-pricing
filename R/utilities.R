@@ -13,7 +13,7 @@ library(stringr)
 #' @param as_at_date The date at which the exchange rate was valid
 #' @return A numeric vector of exchange rates
 #' @examples
-#' get_exchange_rates(c("USD", "HKD"), "EUR", "as.Date"2005-04-01")
+#' get_exchange_rates(c("USD", "HKD"), "EUR", "as.Date(2005-04-01)")
 get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_date = Sys.Date()){
   
   ## get previous month
