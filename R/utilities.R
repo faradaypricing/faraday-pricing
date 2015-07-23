@@ -26,7 +26,7 @@ get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_d
                       sep="")
   
   pricing.con <- odbcDriverConnect('driver={SQL Server};
-   server=GBLONTPD39;database=FaradayPricing;trusted_connection=true')
+   server=GBLONTPD57;database=FaradayPricing;trusted_connection=true')
   
   query = "SELECT 
             [Ccy],
@@ -69,10 +69,10 @@ get_exchange_rates <- function(currency_codes, to_currency_code = "GBP", as_at_d
 get_valid_curency_codes <-function(){
   
   pricing.con <- odbcDriverConnect('driver={SQL Server};
-   server=GBLONTPD39;database=FaradayPricing;trusted_connection=true')
+   server=GBLONTPD57;database=FaradayPricing;trusted_connection=true')
   
   query = "SELECT DISTINCT
-            [Ccy]
+            [Ccy] as ccy
             FROM [FaradayPricing].[dbo].[v_CcyRate]"
            
   
