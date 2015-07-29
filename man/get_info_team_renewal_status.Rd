@@ -4,21 +4,10 @@
 \alias{get_info_team_renewal_status}
 \title{Returns the renewal information for the selected inception and expiry date ranges}
 \usage{
-get_info_team_renewal_status(server = "GBLONTPD06", database = "WWD",
-  user = "", password = "", syndicate = c(1192, 435), inception_from,
-  inception_to, reporting_level = "team", reporting_values)
+get_info_team_renewal_status(inception_from, inception_to,
+  reporting_level = "team", reporting_values, syndicate = c(1192, 435))
 }
 \arguments{
-\item{server}{The server to query}
-
-\item{database}{The database}
-
-\item{user}{The user ID (leave blank if using Windows authentication)}
-
-\item{password}{The password (leave blank if using Windows authentication)}
-
-\item{syndicate}{Vector containing syndicate IDs}
-
 \item{inception_from}{First inception date}
 
 \item{inception_to}{Latest inception date}
@@ -26,6 +15,16 @@ get_info_team_renewal_status(server = "GBLONTPD06", database = "WWD",
 \item{reporting_level}{The reporting level to query at - with 'team' or 'atg'}
 
 \item{reporting_values}{Vector of reporting level values}
+
+\item{syndicate}{Vector containing syndicate IDs}
+
+\item{server}{The server to query}
+
+\item{database}{The database}
+
+\item{user}{The user ID (leave blank if using Windows authentication)}
+
+\item{password}{The password (leave blank if using Windows authentication)}
 }
 \value{
 A dataset with risk information

@@ -4,7 +4,7 @@
 \alias{get_info_team_query_from_meta}
 \title{Returns the latest query version for the specified query ID}
 \usage{
-get_info_team_query_from_meta(server = "GBLONTPD57",
+get_info_team_query_from_meta(server = "FARADAYWAREHOUSE",
   database = "FaradayInfoTeam", user = "", password = "", query_id)
 }
 \arguments{
