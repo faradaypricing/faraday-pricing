@@ -210,7 +210,6 @@ get_info_team_policy_info<- function(yoa_from,
   AND  &Where& in (&WhereValue&) 
   and fsr.actuarialATG not like '9%'"
   
-  query <- str_replace_all(query, "&AsAt&", as_at)
   query <- str_replace_all(query, "&YearFrom&", yoa_from)
   query <- str_replace_all(query, "&YearTo&", yoa_to)
   query <- str_replace_all(query, "&Synd&", synd)
