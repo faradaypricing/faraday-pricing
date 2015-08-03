@@ -156,11 +156,18 @@ get_funky_sequel_matches <- function(){
   
   output <- model.data[year_match,] %>%
     mutate(method = "Inconsistent Year",
-           url = get_model_url(quote_id))
+           url = get_model_url(quote_id),
+           info_assured = assured_name)
   
   ##############################################################################
   # string distance for non-matching assureds
   # get closest assured name using Longest Common Substring method
+  
+  info.data <- get_info_team_policy_info(yoa_from = yoa_from,
+                                         yoa_to,
+                                         reporting_values = "ca")
+  info.data <- info.data %>%
+    mutate(assured_lower = tolower(Assured))
   
   assureds <- tolower(unique(model.data$assured_name))
   info_assured <- tolower(unique(info.data$Assured))
@@ -179,12 +186,7 @@ get_funky_sequel_matches <- function(){
     mutate(assured_lower = tolower(assured_name)) %>%
     inner_join(assured_match, by = c("assured_lower" = "model_assured"))
   
-  info.data <- get_info_team_policy_info(yoa_from = yoa_from,
-                                         yoa_to,
-                                         reporting_values = "ca")
-  info.data <- info.data %>%
-    mutate(assured_lower = tolower(Assured))
-  
+
   #################################################
   # Check assured x limit x deductible x inception 
   
@@ -218,9 +220,12 @@ get_funky_sequel_matches <- function(){
 
   model.data$suggestion[pat_match] <- match.data$RiskRef[pat_match]   
   
+  model.data$info_assured <- gsub("(?<=\\b)([a-z])", "\\U\\1", tolower(model.data$info_assured), perl=TRUE)
+  
   ## add to output
   output <- output %>%
     rbind(model.data[pat_match,] %>%
+            select(-assured_lower) %>%
             mutate(method = "Invalid Sequel ID",
                    url = get_model_url(quote_id)))
   
