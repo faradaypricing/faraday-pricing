@@ -1,4 +1,5 @@
 
+
 #' Returns the latest query version for the specified query ID
 #' 
 #'
@@ -15,7 +16,7 @@
 #' - update_date
 #' @examples
 #' get_info_team_query_from_meta(query_id = "RenewalStatus")
-get_info_team_query_from_meta <- function(server = "FARADAYWAREHOUSE", 
+.get_info_team_query_from_meta <- function(server = "FARADAYWAREHOUSE", 
                                           database = "FaradayInfoTeam", 
                                           user ="", 
                                           password = "",
@@ -67,7 +68,7 @@ get_info_team_query_from_meta <- function(server = "FARADAYWAREHOUSE",
 #'    inception_to = "2015-08-01", 
 #'    reporting_level = "team",
 #'    reporting_values = "ca")
-get_info_team_renewal_status <- function(inception_from,
+.get_info_team_renewal_status <- function(inception_from,
                                          inception_to,
                                          reporting_level = "team",
                                          reporting_values,
@@ -95,7 +96,7 @@ get_info_team_renewal_status <- function(inception_from,
   
 
   
-  query <- get_info_team_query_from_meta(query_id = "RenewalStatus")$Query
+  query <- .get_info_team_query_from_meta(query_id = "RenewalStatus")$Query
   
   query <- str_replace_all(query, "&ExpiryFrom&", expiry_from)
   query <- str_replace_all(query, "&ExpiryTo&", expiry_to)
@@ -137,7 +138,7 @@ get_info_team_renewal_status <- function(inception_from,
 #' @return A dataset with risk information
 #' @examples
 #' get_info_team_policy_info(2013,2015,"class", "ca")
-get_info_team_policy_info<- function(yoa_from,
+.get_info_team_policy_info<- function(yoa_from,
                                        yoa_to,
                                        reporting_level = "class",
                                        reporting_values,
@@ -191,16 +192,15 @@ get_info_team_policy_info<- function(yoa_from,
   , FSR.SignedOrder
   , FSR.WrittenLine
   , FSR.EstSignedLine
-  
-  
+  , FSR.PremiumType
   
   FROM  
   
   FaradayWarehouse.dbo.FW_D_Risk as FSR
   
   LEFT OUTER JOIN
-  FaradayReporting.dbo.reporting as FSG
-  ON FSR.BlockStat = FSG.Class AND FSR.SyndRef = FSG.SyndRef
+    FaradayReporting.dbo.reporting as FSG
+      ON FSR.BlockStat = FSG.Class AND FSR.SyndRef = FSG.SyndRef
   
   
   WHERE 
@@ -233,4 +233,163 @@ get_info_team_policy_info<- function(yoa_from,
   
   return(data)
 }
+
+#' Returns the live policies for the specified teams
+#' 
+#'
+#' @param team Vector containing the teams for which live policies are required
+#' @param ccy_code The currency in which to show premium
+#' @param as_at_date The exchange rate date (Exchange rates used will be end of month)
+#' @return A dataset with live policy details
+#' @details The function is vectorised over team. The following columns are returned:
+#' - Major Class
+#' - Minor Class
+#' - Sequel ID
+#' @examples
+#' get_get_live_policies_for_team(c("ca","av"))
+get_live_policies_for_team <- function(team){
+  
+  year <- as.POSIXlt(Sys.Date())$year + 1900
+
+  retVal <- get_policies_for_team(team = team, 
+                                  yoa_from = year - 2,
+                                  yoa_to = year + 1) %>%
+              filter(expiry_date >= Sys.Date(),
+                     inception_date <= Sys.Date())
+    
+
+    return(retVal)
+}
+
+
+get_policies_for_team <- function(team, yoa_from, yoa_to){
+  year <- as.POSIXlt(Sys.Date())$year + 1900
+  
+  char_team <- as.character(team)
+  
+  info.data.raw <- .get_info_team_policy_info(yoa_from = as.integer(yoa_from),
+                                              yoa_to = as.integer(yoa_to),
+                                              reporting_values = char_team)
+  
+  info.data <- info.data.raw %>%
+    filter(LineStatus == "Signed" | LineStatus == "Written") %>%
+    mutate(inception_date = as.Date(InceptionDate, tz=""),
+           expiry_date = as.Date(ExpiryDate, tz="")) %>%
+    mutate(BlockStat = paste0(Block, Stat)) %>%
+    select(major_class = majorclassDesc,
+           minor_class = minorclass,
+           sequel_id = RiskRef,
+           uw = CurrUw,
+           inception_date,
+           expiry_date,
+           block_stat = BlockStat,
+           assured = Assured,
+           line_status = LineStatus,
+           signed_line = SignedLine,
+           limit = Limit,
+           deductible = Deductible
+    ) %>%
+    distinct()
+  
+  vec_to_string <- function(vec){
+    v <- unique(as.character(vec))
+    retVal <- paste0(v, collapse=",")
+  }
+  
+  # group minor class and blockstat into single row  
+  
+  retVal <- info.data %>% 
+    group_by(sequel_id,
+             uw,
+             inception_date,
+             expiry_date,
+             assured,
+             line_status,
+             signed_line,
+             limit,
+             deductible) %>%
+    summarise(major_class = vec_to_string(major_class),
+              minor_class = vec_to_string(minor_class),
+              block_stat = vec_to_string(block_stat)) %>%
+    ungroup()
+  
+  return(retVal)
+}
+
+get_financials_for_sequel_id <- function(sequel_id, ccy_code = "usd", as_at_date = Sys.Date()){
+  
+  query <- "SELECT
+  
+    FSS.RiskRef
+    , FSS.YoA
+    , FSS.settCcy
+    , SUM(FSS.WNPrem) AS WrittenPrem
+    , SUM(FSS.ENPrem) AS EPI
+    , SUM(FSS.BNPrem) AS Bookedprem
+    , sum(fss.BPClaim) as PaidClaims
+    , sum(fss.Ccr) as Osclaims
+    , sum(fss.Acr) as Says
+    , sum(fss.CHC) as CHCs
+    , Sum(Fss.IBNR+fss.CHC) as IBNR
+    , SUM(FSS.Iclaim+fss.CHC) AS Incurred
+    
+    FROM  
+    FaradayReporting.dbo.FinancialsMvt as FSS
+    
+    WHERE 
+    
+    FSS.RiskRef in (%sequel_ids%)
+    
+    GROUP BY
+    FSS.RiskRef
+    , FSS.YoA
+    , FSS.settCcy"
+  
+  
+  values <- paste0("'",sequel_id,"'", collapse=",")
+  
+  query <- str_replace(query, "%sequel_ids%", values)
+  
+  ## get financial data
+  data <- .get_data(query, "FARADAYWAREHOUSE", "FaradayInfoTeam")
+  
+  ## get exchange rates
+  ccy_codes <- unique(data$settCcy)
+  exch_rates <- get_exchange_rates(currency_codes = ccy_codes,
+                                   to_currency_code =  ccy_code,
+                                   as_at_date = as_at_date)
+  
+  ## form final output
+  retVal <- data %>% 
+    mutate(sett_ccy = tolower(settCcy)) %>%
+    inner_join(exch_rates, by = c("sett_ccy" = "ccy")) %>%
+    mutate(written_prem = WrittenPrem * rate,
+           epi = EPI * rate,
+           booked_prem = Bookedprem  * rate,
+           paid = PaidClaims * rate,
+           os = Osclaims * rate,
+           incurred = Incurred * rate,
+           say = Says * rate,
+           ibnr = IBNR * rate,
+           ccy_code = ccy_code,
+           sequel_id = RiskRef,
+           yoa = YoA) %>%
+    select(sequel_id,
+           yoa,
+           written_prem,
+           epi,
+           booked_prem,
+           paid,
+           os,
+           incurred,
+           say,
+           ibnr,
+           ccy_code) %>%
+    group_by(sequel_id, yoa, ccy_code) %>%
+    summarise_each(funs = funs(sum))
+  
+  return(retVal)
+}
+
+
 

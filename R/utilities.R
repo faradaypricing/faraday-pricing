@@ -3,6 +3,37 @@ library(dplyr)
 library(stringr)
 
 
+#' Internal function used to retrieve data
+#' 
+#' @param query The query string
+#' @param server The server name
+#' @param database The database name
+#' @param user The username - blank if using Windows authentication
+#' @param password The password - blank if using Windows authentication
+#' @return The results from running the query
+#' @examples
+#' .get_data("SELECT * FROM dbo.Home", "SERVER1", "pricing", "jim", "jim1234")
+.get_data <- function(query, server, database, user = "", password=""){
+  ## set up connection
+  
+  conn_string <- if(user != ""){
+    paste0('driver={SQL Server};server=',server,';database=',database,';uid=', user,';pwd=',password)
+  }else{
+    paste0('driver={SQL Server};server=',server,';database=',database,';Trusted_Connection = Yes')
+  }
+  
+  ## connect and run query
+  con <- odbcDriverConnect(conn_string)
+  
+  ## execute query
+  data <- sqlExecute(con, query = query, fetch = T, stringsAsFactors = F)
+  
+  ## close connection
+  odbcClose(con)
+  
+  return(data)
+}
+
 #' Returns exchange rates for valid currency codes. The values returned are the value of 1 unit of the 
 #' currency in the target currency. eg 1 GBP = X USD
 #' 

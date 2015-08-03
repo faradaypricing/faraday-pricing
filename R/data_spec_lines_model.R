@@ -25,7 +25,10 @@ get_priced_layers <- function(inception_from, inception_to){
             
               l.sequel_id,
               l.layer_id,
+              l.layer_no,
               a.assured_name,
+              qv.quote_id,
+              qv.quote_version_no,
               qv.inception_date,
               qv.is_selected_final
               
@@ -36,8 +39,12 @@ get_priced_layers <- function(inception_from, inception_to){
             
               where
               qv.is_deleted = 'N'
-              and l.is_deleted = 'N'"
+              and l.is_deleted = 'N'
+              and qv.inception_date >= %incept_from%
+              and qv.inception_date <= %incept_to%"
 
+  query <- str_replace(query, "%incept_from%", i_from)
+  query <- str_replace(query, "%incept_to%", i_to)
   
   ## execute query
   model.data <- sqlExecute(con, query = query, fetch = T, stringsAsFactors = F)
@@ -151,6 +158,36 @@ get_funky_sequel_matches <- function(){
     mutate(method = "Inconsistent Year",
            url = get_model_url(quote_id))
   
+  ##############################################################################
+  # string distance for non-matching assureds
+  # get closest assured name using Longest Common Substring method
+  
+  assureds <- tolower(unique(model.data$assured_name))
+  info_assured <- tolower(unique(info.data$Assured))
+  
+  ## match up assured name using LCS method
+  assured_match <- do.call("rbind",lapply(assureds, function(name){
+    
+    match <- stringdist(name, info_assured , method = "lcs")
+    name_match <- info_assured[match==min(match)][1]
+    
+    retVal <- data.frame(model_assured = name, info_assured = name_match, stringsAsFactors = F)
+  }))
+  
+  ## write lower values of assured to both datasets
+  model.data <- model.data %>%
+    mutate(assured_lower = tolower(assured_name)) %>%
+    inner_join(assured_match, by = c("assured_lower" = "model_assured"))
+  
+  info.data <- get_info_team_policy_info(yoa_from = yoa_from,
+                                         yoa_to,
+                                         reporting_values = "ca")
+  info.data <- info.data %>%
+    mutate(assured_lower = tolower(Assured))
+  
+  #################################################
+  # Check assured x limit x deductible x inception 
+  
   ## Check doesn't match pattern
   pat_match <- is.na(sequel_years[,1])
   
@@ -159,14 +196,12 @@ get_funky_sequel_matches <- function(){
   yoa_from <- min(as.POSIXlt(model.data$inception_date)$year + 1900)
   yoa_to <- max(as.POSIXlt(model.data$inception_date)$year + 1900)
   
-  info.data <- get_info_team_policy_info(yoa_from = yoa_from,
-                                         yoa_to,
-                                         reporting_values = "ca") %>%
+  info.data <- info.data %>%
     filter(Assured != "") %>%
     ## tz ="" so as not to mess up dates!!!
     mutate(incept_date = as.Date(InceptionDate, tz="")) %>%
-    select(Assured,incept_date,Limit,Deductible, RiskRef) %>%
-    group_by(Assured,incept_date,Limit,Deductible) %>%
+    select(assured_lower,incept_date,Limit,Deductible, RiskRef) %>%
+    group_by(assured_lower,incept_date,Limit,Deductible) %>%
     ## can be a sequel_id for each blockstat - just take the first as this is only to offer
     ## a suggestion
     distinct()
@@ -176,23 +211,11 @@ get_funky_sequel_matches <- function(){
     ## tz ="" so as not to mess up dates!!!
     mutate(incept_date = as.Date(inception_date, tz="")) %>%
     left_join(info.data,
-              by = c("assured_name" = "Assured", 
+              by = c("assured_lower", 
                                  "incept_date",
                                  "limit" = "Limit",
                                  "deductible" = "Deductible"))
-# 
-#   
-#   View(x<-match.data %>%
-#          group_by(id) %>%
-#          summarise(count=n()) %>%
-#          arrange(desc(count)))
-#     
-#   match.data %>% filter(id == 418)
-#   
-#   model.data %>% filter(id == 236)
-#   
-  info.data %>% filter(Assured == "HIGHMARK CASUALTY INS CO")
-  
+
   model.data$suggestion[pat_match] <- match.data$RiskRef[pat_match]   
   
   ## add to output
@@ -202,8 +225,87 @@ get_funky_sequel_matches <- function(){
                    url = get_model_url(quote_id)))
   
   
+  
+
+  
+  
   return(output)
 }
 
 
+get_priced_layers_v2 <- function(inception_from, inception_to){
+  
+  conn_string <- 'driver={SQL Server};server=gblontpd54;database=pricing_prod;uid=pricingteam;pwd=F4raday00'
+  
+  i_from <- as.character(as.Date(inception_from))
+  i_to <- as.character(as.Date(inception_to))
+  
+  ## set up connection
+  con <- odbcDriverConnect(conn_string)
+  
+  query <- 
+  "select
+    l.sequel_id,
+    l.layer_id,
+    l.layer_no,
+    l.deal_type_code,
+    s.limit,
+    s.deductible,
+    a.assured_name,
+    qv.quote_id,
+    qv.quote_version_no,
+    qv.inception_date,
+    qv.expiry_date,
+    qv.is_selected_final,
+    tr.brokerage_pct,
+    tr.commission_pct,
+    tr.combined_ratio_pct as combined_ratio,
+    tr.loss_ratio_pct as loss_ratio,
+    tr.combined_ratio_pct - tr.loss_ratio_pct - tr.brokerage_pct - tr.commission_pct as expense_pct,
+    tr.loss_cost,
+    tr.pct_100_gross_premium as gross_prem,
+    tr.pct_100_cont_premium as contingent_prem,
+    tr.pct_100_pc_return_premium as pc_return_prem
+  
+  from dbo.quote_version qv
+    inner join dbo.layer l on l.quote_version_id = qv.quote_version_id
+    inner join dbo.quote_master qm on qv.quote_id = qm.quote_id
+    inner join ref.assured a on a.assured_id = qm.assured_id
+    inner join dbo.section s on l.layer_id = s.layer_id
+    inner join splines.terms_results tr on tr.layer_id = l.layer_id
+    inner join [dbo].[calculation_tracking] ct on ct.layer_id = l.layer_id
+    
+  where
+    qv.is_deleted = 'N'
+    and l.is_deleted = 'N'
+    and (l.layer_status_code = 'SGN' OR l.layer_status_code = 'WRT')
+    and qv.inception_date >= '%incept_from%'
+    and qv.inception_date <= '%incept_to%'
+    and s.is_deleted = 'N'
+    and s.section_letter = 'A'
+    and ct.api_function_code = 'FullRatingResult'
+    and ct.is_calculation_valid = 'Y'
+    and tr.is_cummulative_result = CASE WHEN l.deal_type_code = 'OneYear' THEN 'N' ELSE 'Y' END
+  "
+  
+  query <- str_replace(query, "%incept_from%", i_from)
+  query <- str_replace(query, "%incept_to%", i_to)
+  
+  
+  ## execute query
+  model.data <- sqlExecute(con, query = query, fetch = T, stringsAsFactors = F)
+  
+  ## fix date fields
+  model.data$inception_date <- as.Date(model.data$inception_date)
+  model.data$expiry_date <- as.Date(model.data$expiry_date)
+  
+  # change is_selected_final to TRUE/FALSE
+  model.data$is_selected_final <- ifelse(model.data$is_selected_final == 'Y', T, F)
+  
+  ## close connection
+  odbcClose(con)
+  
+  
+  return(model.data)
+}
 
