@@ -163,6 +163,11 @@ get_funky_sequel_matches <- function(){
   # string distance for non-matching assureds
   # get closest assured name using Longest Common Substring method
   
+  
+  ## suggestions from info team - match inception, assured and limit/deductible
+  yoa_from <- min(as.POSIXlt(model.data$inception_date)$year + 1900)
+  yoa_to <- max(as.POSIXlt(model.data$inception_date)$year + 1900)
+  
   info.data <- .get_info_team_policy_info(yoa_from = yoa_from,
                                          yoa_to,
                                          reporting_values = "ca")
@@ -194,10 +199,6 @@ get_funky_sequel_matches <- function(){
   pat_match <- is.na(sequel_years[,1])
   
 
-  ## suggestions from info team - match inception, assured and limit/deductible
-  yoa_from <- min(as.POSIXlt(model.data$inception_date)$year + 1900)
-  yoa_to <- max(as.POSIXlt(model.data$inception_date)$year + 1900)
-  
   info.data <- info.data %>%
     filter(Assured != "") %>%
     ## tz ="" so as not to mess up dates!!!
