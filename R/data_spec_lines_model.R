@@ -213,8 +213,9 @@ get_funky_sequel_matches <- function(){
   match.data <- model.data %>%
     ## tz ="" so as not to mess up dates!!!
     mutate(incept_date = as.Date(inception_date, tz="")) %>%
+    ## match against fuzzy name match
     left_join(info.data,
-              by = c("assured_lower", 
+              by = c("info_assured" = "assured_lower", 
                                  "incept_date",
                                  "limit" = "Limit",
                                  "deductible" = "Deductible"))
