@@ -163,7 +163,7 @@ get_funky_sequel_matches <- function(){
   # string distance for non-matching assureds
   # get closest assured name using Longest Common Substring method
   
-  info.data <- get_info_team_policy_info(yoa_from = yoa_from,
+  info.data <- .get_info_team_policy_info(yoa_from = yoa_from,
                                          yoa_to,
                                          reporting_values = "ca")
   info.data <- info.data %>%
