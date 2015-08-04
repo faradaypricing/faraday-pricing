@@ -305,6 +305,7 @@ get_priced_layers_v2 <- function(inception_from, inception_to){
   ## fix date fields
   model.data$inception_date <- as.Date(model.data$inception_date)
   model.data$expiry_date <- as.Date(model.data$expiry_date)
+  model.data$yoa = as.POSIXlt(model.data$inception_date)$year + 1900
   
   # change is_selected_final to TRUE/FALSE
   model.data$is_selected_final <- ifelse(model.data$is_selected_final == 'Y', T, F)
