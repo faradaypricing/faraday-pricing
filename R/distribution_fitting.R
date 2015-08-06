@@ -61,7 +61,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "weibull"){
       gf_shape = "weibull"
-      fd_w <- fitdistr(data,densfun=dweibull,start=list(scale=1,shape=2))
+      fd_w <- fitdist(data,"weibull")
       est_shape = fd_w$estimate[[1]]
       est_scale = fd_w$estimate[[2]]
       
