@@ -14,7 +14,7 @@ library(MASS)
 #' Provides test results from fitting distributions to data
 #' 
 #' @param data A numeric vector containing the values to fit
-#' @param fit Names of the distributions to fit. \n Distributions "beta", "cauchy", "chi-squared", "exponential", "f", "gamma", "geometric", "lognormal", "logistic", "negative-binomial", "normal", "Poisson", "t" and "weibull" are recognised, case being ignored.
+#' @param fit Names of the distributions to fit.  Distributions "beta", "cauchy", "chi-squared", "exponential", "f", "gamma", "geometric", "lognormal", "logistic", "negative-binomial", "normal", "Poisson", "t" and "weibull" are recognised, case being ignored.
 #' @param sample The proportion of the data to be used for fitting. A random sample will be taken. Default is 1.
 #' @return A dataframe containing fitted parameters and test statistics
 #' @examples

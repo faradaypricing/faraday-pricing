@@ -5,16 +5,14 @@
 \title{Function to fit distribution to data
 Provides test results from fitting distributions to data}
 \usage{
-fit_distribution(data, fit = "gamma", sample = 1, method = "mle")
+fit_distribution(data, fit = "gamma", sample = 1)
 }
 \arguments{
 \item{data}{A numeric vector containing the values to fit}
 
-\item{fit}{Names of the distributions to fit. Distributions "beta", "cauchy", "chi-squared", "exponential", "f", "gamma", "geometric", "lognormal", "logistic", "negative-binomial", "normal", "Poisson", "t" and "weibull" are recognised, case being ignored.}
+\item{fit}{Names of the distributions to fit.  Distributions "beta", "cauchy", "chi-squared", "exponential", "f", "gamma", "geometric", "lognormal", "logistic", "negative-binomial", "normal", "Poisson", "t" and "weibull" are recognised, case being ignored.}
 
 \item{sample}{The proportion of the data to be used for fitting. A random sample will be taken. Default is 1.}
-
-\item{method}{Method to use for fitting. "mle" for 'maximum likelihood estimation', "mme" for 'moment matching estimation', "qme" for 'quantile matching estimation' and "mge" for 'maximum goodness-of-fit estimation'.}
 }
 \value{
 A dataframe containing fitted parameters and test statistics
