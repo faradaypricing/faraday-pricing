@@ -19,7 +19,7 @@ library(MASS)
 #' @return A dataframe containing fitted parameters and test statistics
 #' @examples
 #' fit_distribution(data, c("poisson", "negative-binomial"))
-fit_distribution <- function(data, fit="gamma", sample = 1){
+fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
 
   numfit <- length(fit)
   fit <- tolower(fit)
@@ -34,7 +34,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
 
   if(fit == "gamma") {
     gf_shape = "gamma"
-    fd_g <- fitdistr(data, "gamma")
+    fd_g <- fitdist(data, "gamma",method = method)
     est_shape = fd_g$estimate[[1]]
     est_rate = fd_g$estimate[[2]]
     
@@ -48,7 +48,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "poisson"){
       gf_shape = "poisson"
-      fd_p <- fitdistr(data, "poisson")
+      fd_p <- fitdist(data, "poisson", method = method)
       est_lambda = fd_p$estimate[[1]]
       
       samps <- rpois(200, est_lambda)
@@ -61,7 +61,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "weibull"){
       gf_shape = "weibull"
-      fd_w <- fitdist(data,"weibull")
+      fd_w <- fitdist(data,"weibull", method = method)
       est_shape = fd_w$estimate[[1]]
       est_scale = fd_w$estimate[[2]]
       
@@ -74,7 +74,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "normal"){
       gf_shape = "normal"
-      fd_n <- fitdistr(data, "normal")
+      fd_n <- fitdistr(data, "normal", method = method)
       est_mean = fd_n$estimate[[1]]
       est_sd = fd_n$estimate[[2]]
       
@@ -87,7 +87,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "exponential"){
       gf_shape = "exponential"
-      fd_e <- fitdistr(data, "exponential")
+      fd_e <- fitdist(data, "exponential", method = method)
       est_rate = fd_e$estimate[[1]]
       ks = ks.test(data, "pexp", rate=est_rate)
       # add to results
@@ -98,7 +98,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "logistic"){
       gf_shape = "logistic"
-      fd_l <- fitdistr(data, "logistic")
+      fd_l <- fitdist(data, "logistic", method = method)
       est_location = fd_l$estimate[[1]]
       est_scale = fd_l$estimate[[2]]
       ks = ks.test(data, "plogis", location=est_location, scale=est_scale)
@@ -110,7 +110,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "lognormal"){
       gf_shape = "lognormal"
-      fd_l <- fitdistr(data, "lognormal")
+      fd_l <- fitdist(data, "lognormal", method = method)
       mean_log = fd_l$estimate[[1]]
       sd_log = fd_l$estimate[[2]]
       ks = ks.test(data, "plnorm", meanlog = mean_log, sdlog=sd_log)
@@ -122,7 +122,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "beta"){
       gf_shape = "beta"
-      fd_l <- fitdistrplus::fitdist(data, "beta")
+      fd_l <- fitdistrplus::fitdist(data, "beta", method = method)
       est_1 = fd_l$estimate[[1]]
       est_2 = fd_l$estimate[[2]]
       ks = ks.test(data, "pbeta", shape1 = est_1, shape2 = est_2)
@@ -134,7 +134,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "cauchy"){
       gf_shape = "cauchy"
-      fd_l <- fitdistr(data, "cauchy")
+      fd_l <- fitdist(data, "cauchy", method = method)
       est_1 = fd_l$estimate[[1]]
       est_2 = fd_l$estimate[[2]]
       ks = ks.test(data, "pcauchy", location = est_1, scale = est_2)
@@ -146,7 +146,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "chi-squared"){
       gf_shape = "chi-squared"
-      fd_l <- fitdistrplus::fitdist(data, "chisq", start = list(df=7))
+      fd_l <- fitdistrplus::fitdist(data, "chisq", start = list(df=7), method = method)
       est_1 = fd_l$estimate[[1]]
       
       ks = ks.test(data, "pchisq", df = est_1)
@@ -158,7 +158,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "f"){
       gf_shape = "f"
-      fd_l <- fitdistrplus::fitdist(data, "f", start = list(df1=7, df2=9))
+      fd_l <- fitdistrplus::fitdist(data, "f", start = list(df1=7, df2=9), method = method)
       est_1 = fd_l$estimate[[1]]
       est_2 = fd_l$estimate[[2]]
       
@@ -171,7 +171,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "negative-binomial"){
       gf_shape = "negative-binomial"
-      fd_l <- fitdistrplus::fitdist(data, "nbinom")
+      fd_l <- fitdistrplus::fitdist(data, "nbinom", method = method)
       est_1 = fd_l$estimate[[1]]
       est_2 = fd_l$estimate[[2]]
       
@@ -185,7 +185,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "t"){
       gf_shape = "t"
-      fd_l <- fitdistrplus::fitdist(data, "t", start=list(df=4))
+      fd_l <- fitdistrplus::fitdist(data, "t", start=list(df=4), method = method)
       est_1 = fd_l$estimate[[1]]
 
       
