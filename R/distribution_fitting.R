@@ -14,13 +14,12 @@ library(MASS)
 #' Provides test results from fitting distributions to data
 #' 
 #' @param data A numeric vector containing the values to fit
-#' @param fit Names of the distributions to fit. Distributions "beta", "cauchy", "chi-squared", "exponential", "f", "gamma", "geometric", "lognormal", "logistic", "negative-binomial", "normal", "Poisson", "t" and "weibull" are recognised, case being ignored.
+#' @param fit Names of the distributions to fit. \n Distributions "beta", "cauchy", "chi-squared", "exponential", "f", "gamma", "geometric", "lognormal", "logistic", "negative-binomial", "normal", "Poisson", "t" and "weibull" are recognised, case being ignored.
 #' @param sample The proportion of the data to be used for fitting. A random sample will be taken. Default is 1.
-#' @param method Method to use for fitting. "mle" for 'maximum likelihood estimation', "mme" for 'moment matching estimation', "qme" for 'quantile matching estimation' and "mge" for 'maximum goodness-of-fit estimation'.
 #' @return A dataframe containing fitted parameters and test statistics
 #' @examples
 #' fit_distribution(data, c("poisson", "negative-binomial"))
-fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
+fit_distribution <- function(data, fit="gamma", sample = 1){
 
   numfit <- length(fit)
   fit <- tolower(fit)
@@ -35,7 +34,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
 
   if(fit == "gamma") {
     gf_shape = "gamma"
-    fd_g <- fitdist(data, "gamma",method = method)
+    fd_g <- fitdistr(data, "gamma")
     est_shape = fd_g$estimate[[1]]
     est_rate = fd_g$estimate[[2]]
     
@@ -49,7 +48,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "poisson"){
       gf_shape = "poisson"
-      fd_p <- fitdist(data, "poisson", method = method)
+      fd_p <- fitdistr(data, "poisson")
       est_lambda = fd_p$estimate[[1]]
       
       samps <- rpois(200, est_lambda)
@@ -62,7 +61,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "weibull"){
       gf_shape = "weibull"
-      fd_w <- fitdist(data,"weibull", method = method)
+      fd_w <- fitdist(data,"weibull")
       est_shape = fd_w$estimate[[1]]
       est_scale = fd_w$estimate[[2]]
       
@@ -75,7 +74,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "normal"){
       gf_shape = "normal"
-      fd_n <- fitdistr(data, "normal", method = method)
+      fd_n <- fitdistr(data, "normal")
       est_mean = fd_n$estimate[[1]]
       est_sd = fd_n$estimate[[2]]
       
@@ -88,7 +87,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "exponential"){
       gf_shape = "exponential"
-      fd_e <- fitdist(data, "exponential", method = method)
+      fd_e <- fitdistr(data, "exponential")
       est_rate = fd_e$estimate[[1]]
       ks = ks.test(data, "pexp", rate=est_rate)
       # add to results
@@ -99,7 +98,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "logistic"){
       gf_shape = "logistic"
-      fd_l <- fitdist(data, "logistic", method = method)
+      fd_l <- fitdistr(data, "logistic")
       est_location = fd_l$estimate[[1]]
       est_scale = fd_l$estimate[[2]]
       ks = ks.test(data, "plogis", location=est_location, scale=est_scale)
@@ -111,7 +110,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "lognormal"){
       gf_shape = "lognormal"
-      fd_l <- fitdist(data, "lognormal", method = method)
+      fd_l <- fitdistr(data, "lognormal")
       mean_log = fd_l$estimate[[1]]
       sd_log = fd_l$estimate[[2]]
       ks = ks.test(data, "plnorm", meanlog = mean_log, sdlog=sd_log)
@@ -123,7 +122,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "beta"){
       gf_shape = "beta"
-      fd_l <- fitdistrplus::fitdist(data, "beta", method = method)
+      fd_l <- fitdistrplus::fitdist(data, "beta")
       est_1 = fd_l$estimate[[1]]
       est_2 = fd_l$estimate[[2]]
       ks = ks.test(data, "pbeta", shape1 = est_1, shape2 = est_2)
@@ -135,7 +134,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "cauchy"){
       gf_shape = "cauchy"
-      fd_l <- fitdist(data, "cauchy", method = method)
+      fd_l <- fitdistr(data, "cauchy")
       est_1 = fd_l$estimate[[1]]
       est_2 = fd_l$estimate[[2]]
       ks = ks.test(data, "pcauchy", location = est_1, scale = est_2)
@@ -147,7 +146,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "chi-squared"){
       gf_shape = "chi-squared"
-      fd_l <- fitdistrplus::fitdist(data, "chisq", start = list(df=7), method = method)
+      fd_l <- fitdistrplus::fitdist(data, "chisq", start = list(df=7))
       est_1 = fd_l$estimate[[1]]
       
       ks = ks.test(data, "pchisq", df = est_1)
@@ -159,7 +158,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "f"){
       gf_shape = "f"
-      fd_l <- fitdistrplus::fitdist(data, "f", start = list(df1=7, df2=9), method = method)
+      fd_l <- fitdistrplus::fitdist(data, "f", start = list(df1=7, df2=9))
       est_1 = fd_l$estimate[[1]]
       est_2 = fd_l$estimate[[2]]
       
@@ -172,7 +171,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "negative-binomial"){
       gf_shape = "negative-binomial"
-      fd_l <- fitdistrplus::fitdist(data, "nbinom", method = method)
+      fd_l <- fitdistrplus::fitdist(data, "nbinom")
       est_1 = fd_l$estimate[[1]]
       est_2 = fd_l$estimate[[2]]
       
@@ -186,7 +185,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1, method = "mle"){
     
     else if(fit == "t"){
       gf_shape = "t"
-      fd_l <- fitdistrplus::fitdist(data, "t", start=list(df=4), method = method)
+      fd_l <- fitdistrplus::fitdist(data, "t", start=list(df=4))
       est_1 = fd_l$estimate[[1]]
 
       
