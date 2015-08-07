@@ -48,7 +48,8 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "poisson"){
       gf_shape = "poisson"
-      fd_p <- fitdistr(data, "poisson")
+      
+      fd_p <- fitdistr(as.integer(data), "poisson")
       est_lambda = fd_p$estimate[[1]]
       
       samps <- rpois(200, est_lambda)
@@ -171,7 +172,7 @@ fit_distribution <- function(data, fit="gamma", sample = 1){
     
     else if(fit == "negative-binomial"){
       gf_shape = "negative-binomial"
-      fd_l <- fitdistrplus::fitdist(data, "nbinom")
+      fd_l <- fitdistrplus::fitdist(as.integer(data), "nbinom")
       est_1 = fd_l$estimate[[1]]
       est_2 = fd_l$estimate[[2]]
       
